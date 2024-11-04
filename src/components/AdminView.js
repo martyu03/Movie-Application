@@ -11,50 +11,83 @@ const AdminView = ({ moviesData, fetchData }) => {
     const [year, setYear] = useState('');
     const [genre, setGenre] = useState('');
     const [isActive, setIsActive] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false); 
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [loading, setLoading] = useState(false); // Added loading state
     const notyf = new Notyf();
 
     useEffect(() => {
-        // Check local storage for the admin token
+        // Check local storage for the admin token on component mount
         const token = localStorage.getItem('token');
+        // Set admin status based on token presence
         setIsAdmin(!!token);
-    }, []);
+    }, []); // Empty dependency array to run only on mount
 
     useEffect(() => {
+        // This will evaluate isActive based on form fields
         setIsActive(title && director && description && year && genre);
     }, [title, director, description, year, genre]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        fetch(`${process.env.REACT_APP_API_BASE_URL}/movies`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify({
-                title,
-                director,
-                description,
-                year,
-                genre
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/movies/addMovie`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    title,
+                    director,
+                    description,
+                    year,
+                    genre
+                })
+            });
+
+            const data = await response.json();
+            if (data) {
+                notyf.success('Movie Added');
+                // Clear form fields
+                setTitle('');
+                setDirector('');
+                setDescription('');
+                setYear('');
+                setGenre('');
+                // Fetch the updated movies list after successfully adding a movie
+                await fetchData(); 
+                setShowModal(false);
+            } else {
+                notyf.error('Failed to add movie');
+            }
+        } catch (error) {
+            console.error('Error adding movie:', error);
+            notyf.error('Failed to add movie');
+        }
+    };
+
+    const handleDelete = (id) => {
+        if (window.confirm('Are you sure you want to delete this movie?')) {
+            fetch(`${process.env.REACT_APP_API_BASE_URL}/movies/deleteMovie/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                },
             })
-        })
             .then(res => res.json())
             .then(data => {
-                if (data.message === 'Movie added successfully') {
-                    notyf.success('Movie Added');
-                    setTitle('');
-                    setDirector('');
-                    setDescription('');
-                    setYear('');
-                    setGenre('');
-                    fetchData();
-                    setShowModal(false);
+                if (data.message === 'Movie deleted successfully') {
+                    notyf.success('Movie Deleted');
+                    fetchData(); // Refresh the movies list
                 } else {
-                    notyf.error('Failed to add movie');
+                    notyf.error('Failed to delete movie');
                 }
+            })
+            .catch(err => {
+                notyf.error('Error deleting movie');
+                console.error(err);
             });
+        }
     };
 
     // If the user is not an admin, display a message
@@ -153,7 +186,7 @@ const AdminView = ({ moviesData, fetchData }) => {
                                     <strong>Year:</strong> {movie.year} <br />
                                     <strong>Genre:</strong> {movie.genre}
                                 </Card.Text>
-                                <Button variant="danger">Delete</Button> {/* Example button for future functionality */}
+                                <Button variant="danger" onClick={() => handleDelete(movie._id)}>Delete</Button>
                             </Card.Body>
                         </Card>
                     </Col>

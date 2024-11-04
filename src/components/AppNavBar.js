@@ -1,4 +1,3 @@
-// src/components/AppNavbar.js
 import React, { useContext } from 'react';
 import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
 import { Link, NavLink } from 'react-router-dom';
@@ -17,14 +16,14 @@ export default function AppNavbar() {
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="ms-auto">
-                        <Nav.Link as={NavLink} to="/" exact className="extreme-link">Home</Nav.Link>
+                        <Nav.Link as={NavLink} to="/" className="extreme-link">Home</Nav.Link>
 
                         {localStorage.getItem('token') ? (
                             <>
-                                <Nav.Link as={NavLink} to="/movies" exact className="extreme-link">My Movies</Nav.Link>
+                                <Nav.Link as={NavLink} to="/movies" className="extreme-link">My Movies</Nav.Link>
 
                                 {/* Only show "Add Movie" link and "Admin Dashboard" link if user is an admin */}
-                                {user.isAdmin && (
+                                {user && user.isAdmin && (
                                     <NavDropdown title="Admin" id="admin-dropdown" className="extreme-link">
                                         <NavDropdown.Item as={NavLink} to="/addMovie">Add Movie</NavDropdown.Item>
                                         <NavDropdown.Item as={NavLink} to="/admin-dashboard">Admin Dashboard</NavDropdown.Item>

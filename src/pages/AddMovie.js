@@ -26,6 +26,7 @@ export default function AddMovie() {
 
     function handleSubmit(e) {
         e.preventDefault();
+
         fetch(`${process.env.REACT_APP_API_BASE_URL}/movies/addMovie`, {
             method: 'POST',
             headers: {
@@ -42,9 +43,10 @@ export default function AddMovie() {
         })
         .then(res => res.json())
         .then(data => {
-            console.log(data);
-            if (data) {
+            console.log('API Response:', data);  // Log the entire response for debugging
+            if (data.success) {  // Check the success property
                 notyf.success('Movie Added');
+                // Reset fields
                 setTitle('');
                 setDirector('');
                 setDescription('');
@@ -52,8 +54,12 @@ export default function AddMovie() {
                 setGenre('');
                 setRedirect(true);
             } else {
-                notyf.error('Unsuccessful Movie Creation');
+                notyf.error(data.message || 'Unsuccessful Movie Creation');
             }
+        })
+        .catch(err => {
+            console.error('Error adding movie:', err);
+            notyf.error('Failed to add movie due to an error');
         });
     }
 
