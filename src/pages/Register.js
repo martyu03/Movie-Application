@@ -37,7 +37,7 @@ export default function Register() {
         })
         .then(data => {
             console.log(data);
-            if (data.message === "User registered successfully") {
+            if (data) {
                 setEmail('');
                 setPassword('');
                 setConfirmPassword('');
