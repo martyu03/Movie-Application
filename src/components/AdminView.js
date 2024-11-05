@@ -5,6 +5,8 @@ import { Notyf } from 'notyf';
 
 const AdminView = ({ moviesData, fetchData }) => {
     const [showModal, setShowModal] = useState(false);
+    const [showUpdateModal, setShowUpdateModal] = useState(false); // State for update modal
+    const [currentMovie, setCurrentMovie] = useState(null); // State for the movie being updated
     const [title, setTitle] = useState('');
     const [director, setDirector] = useState('');
     const [description, setDescription] = useState('');
@@ -12,18 +14,14 @@ const AdminView = ({ moviesData, fetchData }) => {
     const [genre, setGenre] = useState('');
     const [isActive, setIsActive] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
-    const [loading, setLoading] = useState(false); // Added loading state
     const notyf = new Notyf();
 
     useEffect(() => {
-        // Check local storage for the admin token on component mount
         const token = localStorage.getItem('token');
-        // Set admin status based on token presence
         setIsAdmin(!!token);
-    }, []); // Empty dependency array to run only on mount
+    }, []);
 
     useEffect(() => {
-        // This will evaluate isActive based on form fields
         setIsActive(title && director && description && year && genre);
     }, [title, director, description, year, genre]);
 
@@ -48,13 +46,7 @@ const AdminView = ({ moviesData, fetchData }) => {
             const data = await response.json();
             if (data) {
                 notyf.success('Movie Added');
-                // Clear form fields
-                setTitle('');
-                setDirector('');
-                setDescription('');
-                setYear('');
-                setGenre('');
-                // Fetch the updated movies list after successfully adding a movie
+                clearForm();
                 await fetchData(); 
                 setShowModal(false);
             } else {
@@ -65,6 +57,32 @@ const AdminView = ({ moviesData, fetchData }) => {
             notyf.error('Failed to add movie');
         }
     };
+
+    const handleUpdate = async (e) => {
+    e.preventDefault();
+    const updatedMovieData = { /* your updated movie data */ };
+    
+    try {
+        const response = await fetch(`https://movieapp-api-lms1.onrender.com/movies/updateMovie/${currentMovie._id}`, {
+            method: 'PATCH', // Change this from PUT to PATCH
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`, // Adjust according to your auth method
+            },
+            body: JSON.stringify(updatedMovieData),
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error updating movie');
+        }
+        
+        const data = await response.json();
+        // handle success
+    } catch (error) {
+        console.error('Error updating movie:', error);
+    }
+};
+
 
     const handleDelete = (id) => {
         if (window.confirm('Are you sure you want to delete this movie?')) {
@@ -88,6 +106,24 @@ const AdminView = ({ moviesData, fetchData }) => {
                 console.error(err);
             });
         }
+    };
+
+    const openUpdateModal = (movie) => {
+        setCurrentMovie(movie);
+        setTitle(movie.title);
+        setDirector(movie.director);
+        setDescription(movie.description);
+        setYear(movie.year);
+        setGenre(movie.genre);
+        setShowUpdateModal(true);
+    };
+
+    const clearForm = () => {
+        setTitle('');
+        setDirector('');
+        setDescription('');
+        setYear('');
+        setGenre('');
     };
 
     // If the user is not an admin, display a message
@@ -171,6 +207,73 @@ const AdminView = ({ moviesData, fetchData }) => {
                 </Modal.Body>
             </Modal>
 
+            {/* Modal for updating a movie */}
+            <Modal show={showUpdateModal} onHide={() => setShowUpdateModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Update Movie</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form onSubmit={handleUpdate}>
+                        <Form.Group>
+                            <Form.Label>Title</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="Enter title"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                required
+                            />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Director</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="Enter director"
+                                value={director}
+                                onChange={(e) => setDirector(e.target.value)}
+                                required
+                            />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Description</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                rows={3}
+                                placeholder="Enter description"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                required
+                            />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Year</Form.Label>
+                            <Form.Control
+                                type="number"
+                                placeholder="Enter year"
+                                value={year}
+                                onChange={(e) => setYear(e.target.value)}
+                                required
+                            />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Genre</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="Enter genre"
+                                value={genre}
+                                onChange={(e) => setGenre(e.target.value)}
+                                required
+                            />
+                        </Form.Group>
+                        <div className="text-center mt-3">
+                            <Button variant="primary" type="submit" disabled={!isActive}>
+                                Update
+                            </Button>
+                        </div>
+                    </Form>
+                </Modal.Body>
+            </Modal>
+
             {/* Display movies in cards */}
             <Row xs={1} md={2} lg={3} className="g-4">
                 {Array.isArray(moviesData) && moviesData.map((movie) => (
@@ -179,14 +282,11 @@ const AdminView = ({ moviesData, fetchData }) => {
                             <Card.Body>
                                 <Card.Title>{movie.title}</Card.Title>
                                 <Card.Subtitle className="mb-2 text-muted">{movie.director}</Card.Subtitle>
-                                <Card.Text>
-                                    <strong>Description:</strong> {movie.description}
-                                </Card.Text>
-                                <Card.Text>
-                                    <strong>Year:</strong> {movie.year} <br />
-                                    <strong>Genre:</strong> {movie.genre}
-                                </Card.Text>
-                                <Button variant="danger" onClick={() => handleDelete(movie._id)}>Delete</Button>
+                                <Card.Text>{movie.description}</Card.Text>
+                                <Card.Text><strong>Year:</strong> {movie.year}</Card.Text>
+                                <Card.Text><strong>Genre:</strong> {movie.genre}</Card.Text>
+                                <Button variant="warning" onClick={() => openUpdateModal(movie)}>Edit</Button>
+                                <Button variant="danger" className="ms-2" onClick={() => handleDelete(movie._id)}>Delete</Button>
                             </Card.Body>
                         </Card>
                     </Col>

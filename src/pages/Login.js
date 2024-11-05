@@ -67,35 +67,36 @@ export default function Login() {
     }, [email, password]);
 
     return (
-        user.id !== null ? <Navigate to="/" /> :
-            <Form onSubmit={authenticate}>
-                <h1 className="my-5 text-center">Login</h1>
+    user && user.id ? <Navigate to="/" /> : // Check if user is defined
+        <Form onSubmit={authenticate}>
+            <h1 className="my-5 text-center">Login</h1>
 
-                <Form.Group controlId="userEmail">
-                    <Form.Label>Email address</Form.Label>
-                    <Form.Control
-                        type="email"
-                        placeholder="Enter email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                </Form.Group>
+            <Form.Group controlId="userEmail">
+                <Form.Label>Email address</Form.Label>
+                <Form.Control
+                    type="email"
+                    placeholder="Enter email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                />
+            </Form.Group>
 
-                <Form.Group controlId="password">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </Form.Group>
+            <Form.Group controlId="password">
+                <Form.Label>Password</Form.Label>
+                <Form.Control
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
+            </Form.Group>
 
-                <Button variant={isActive ? "primary" : "danger"} type="submit" disabled={!isActive}>
-                    Submit
-                </Button>
-            </Form>
-    );
+            <Button variant={isActive ? "primary" : "danger"} type="submit" disabled={!isActive}>
+                Submit
+            </Button>
+        </Form>
+);
+
 }

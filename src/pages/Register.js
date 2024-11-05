@@ -15,12 +15,7 @@ export default function Register() {
     const notyf = new Notyf();
 
     useEffect(() => {
-        if (email !== "" && password !== "" && confirmPassword !== "" && password === confirmPassword) {
-            setIsActive(true);
-        } else {
-            setIsActive(false);
-        }
-        
+        setIsActive(email !== "" && password !== "" && confirmPassword !== "" && password === confirmPassword);
         console.log(isActive);
     }, [email, password, confirmPassword]);
 
@@ -56,24 +51,27 @@ export default function Register() {
             notyf.error('An error occurred during registration. Please try again.');
         });
     }
-    
+
+    // Check if user is null before accessing user.id
+    if (user && user.id) {
+        return <Navigate to="/movies" />;
+    }
+
     return (
-        user.id !== null ? 
-        <Navigate to="/products" /> :
         <Form onSubmit={(e) => registerUser(e)}>
             <h1 className='my-5 text-center'>Register</h1>
             
             <Form.Group>
                 <Form.Label>Email:</Form.Label>
-                <Form.Control type='text' placeholder='Enter Email' required value={email} onChange={e => { setEmail(e.target.value) }} />
+                <Form.Control type='text' placeholder='Enter Email' required value={email} onChange={e => setEmail(e.target.value)} />
             </Form.Group>
             <Form.Group>
                 <Form.Label>Password:</Form.Label>
-                <Form.Control type='password' placeholder='Enter Password' required value={password} onChange={e => { setPassword(e.target.value) }} />
+                <Form.Control type='password' placeholder='Enter Password' required value={password} onChange={e => setPassword(e.target.value)} />
             </Form.Group>
             <Form.Group>
                 <Form.Label>Verify Password:</Form.Label>
-                <Form.Control type='password' placeholder='Confirm Password' required value={confirmPassword} onChange={e => { setConfirmPassword(e.target.value) }} />
+                <Form.Control type='password' placeholder='Confirm Password' required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
             </Form.Group>
             {
                 isActive ?

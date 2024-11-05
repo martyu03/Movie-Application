@@ -4,25 +4,30 @@ import { jwtDecode } from 'jwt-decode';
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState({}); // Initialize as an empty object
 
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
             try {
                 const decodedToken = jwtDecode(token);
-                setUser({ isAdmin: decodedToken.isAdmin }); // Adjust according to your token structure
+                setUser({ id: decodedToken.id, isAdmin: decodedToken.isAdmin });
             } catch (error) {
                 console.error("Failed to decode token:", error);
-                setUser(null); // Reset user if token is invalid
+                setUser({}); // Reset to empty object if token is invalid
             }
         } else {
-            setUser(null); // No token found
+            setUser({}); // No token found
         }
     }, []);
 
+    const unsetUser = () => {
+        setUser({}); // Reset user to an empty object
+        localStorage.removeItem('token'); // Optionally, remove the token from localStorage
+    };
+
     return (
-        <UserContext.Provider value={{ user }}>
+        <UserContext.Provider value={{ user, setUser, unsetUser }}>
             {children}
         </UserContext.Provider>
     );
