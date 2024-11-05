@@ -1,8 +1,10 @@
+// src/pages/Movies.js
 import { useState, useEffect, useContext } from 'react';
-import { Form, Button, ListGroup, Container, Row, Col } from 'react-bootstrap';
+import { Form, Button, ListGroup, Container, Row, Col, Modal } from 'react-bootstrap';
 import UserContext from '../context/UserContext';
 import UserView from '../components/UserView';
-import AdminView from '../components/AdminView'; // Ensure this is imported if used
+import MovieDetails from '../components/MovieDetails'; // Ensure this component is available
+import AdminView from '../components/AdminView';
 import { Notyf } from 'notyf';
 import '../App.css';
 
@@ -13,6 +15,8 @@ export default function Movies() {
     const [movies, setMovies] = useState([]);
     const [searchResults, setSearchResults] = useState([]);
     const [movieTitle, setMovieTitle] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [selectedMovie, setSelectedMovie] = useState(null);
 
     // Fetch active movies
     const fetchMovies = () => {
@@ -61,6 +65,17 @@ export default function Movies() {
         setSearchResults([]);
     };
 
+    // Modal functions
+    const handleShowModal = (movie) => {
+        setSelectedMovie(movie);
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setSelectedMovie(null);
+    };
+
     return (
         <Container>
             <div>
@@ -97,6 +112,9 @@ export default function Movies() {
                                         <p>Year: {movie.year}</p>
                                         <p>Genre: {movie.genre}</p>
                                         <p>Description: {movie.description}</p>
+                                        <Button variant="primary" onClick={() => handleShowModal(movie)}>
+                                            Details
+                                        </Button>
                                     </ListGroup.Item>
                                 ))}
                             </ListGroup>
@@ -110,6 +128,21 @@ export default function Movies() {
                             </Col>
                         </Row>
                         <UserView moviesData={movies} />
+
+                        {/* Modal for Movie Details */}
+                        <Modal show={showModal} onHide={handleCloseModal}>
+                            <Modal.Header closeButton>
+                                <Modal.Title>{selectedMovie?.title}</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>
+                                {selectedMovie && <MovieDetails movie={selectedMovie} />}
+                            </Modal.Body>
+                            <Modal.Footer>
+                                <Button variant="secondary" onClick={handleCloseModal}>
+                                    Close
+                                </Button>
+                            </Modal.Footer>
+                        </Modal>
                     </>
                 )}
             </div>

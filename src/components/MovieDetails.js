@@ -4,13 +4,13 @@ import { useParams } from 'react-router-dom';
 import { Card } from 'react-bootstrap';
 import Loading from '../components/Loading';
 import AddComment from './AddComment';
+import '../App.css'; // Ensure to import your custom styles
 
 export default function MovieDetails() {
     const { id } = useParams();
     const [movie, setMovie] = useState(null);
     const [comments, setComments] = useState([]);
 
-    // Get the token from local storage
     const token = localStorage.getItem('token');
 
     useEffect(() => {
@@ -19,7 +19,7 @@ export default function MovieDetails() {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // Include the token here
+                'Authorization': `Bearer ${token}`
             }
         })
             .then(res => res.json())
@@ -33,7 +33,7 @@ export default function MovieDetails() {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // Include the token here
+                'Authorization': `Bearer ${token}`
             }
         })
             .then(res => res.json())
@@ -41,18 +41,14 @@ export default function MovieDetails() {
                 setComments(data.comments);
             })
             .catch(err => console.error('Error fetching comments:', err));
-    }, [id, token]); // Add token as a dependency to useEffect
+    }, [id, token]);
 
     const handleAddComment = (newComment) => {
         setComments(prevComments => [...prevComments, newComment]);
     };
 
-    // Function to format userId for display
     const formatUserId = (userId) => {
-        if (userId && userId.length > 6) {
-            return `${userId.slice(0, 10)}...`; // Show first 10 characters and ellipsis
-        }
-        return userId;
+        return userId && userId.length > 6 ? `${userId.slice(0, 10)}...` : userId;
     };
 
     return (
@@ -69,7 +65,7 @@ export default function MovieDetails() {
                             <Card.Text>{movie.description}</Card.Text>
                         </Card.Body>
                     </Card>
-                    <h5 className='text-light mt-3 fw-bold'>Comments</h5>
+                    <h5 className='mt-3 fw-bold comments-title'>Comments</h5> {/* Updated to use CSS class */}
                     <AddComment id="addComment" movieId={id} onAddComment={handleAddComment} />
                     <div className="mt-3 pb-3">
                         {comments.length > 0 ? (
@@ -79,7 +75,7 @@ export default function MovieDetails() {
                                         <Card.Subtitle className='fw-semibold'>
                                             {formatUserId(comment.userId)}
                                         </Card.Subtitle>
-                                        <Card.Text>{comment.comment}</Card.Text>
+                                        <Card.Text className="comment-text" style={{ color: 'black' }}>{comment.comment}</Card.Text>
                                     </Card.Body>
                                 </Card>
                             ))
